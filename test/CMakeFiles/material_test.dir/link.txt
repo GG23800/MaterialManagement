@@ -1,1 +1,0 @@
-/usr/bin/c++   -std=c++11 -Wall -O3  -rdynamic CMakeFiles/material_test.dir/test_class.cpp.o  -o material_test -Wl,-rpath,/media/gg/Data/Github/perso/MaterialManagement/src ../src/libMaterialManagement.so 

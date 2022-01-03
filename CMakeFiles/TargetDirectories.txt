@@ -1,6 +1,0 @@
-/media/gg/Data/Github/perso/MaterialManagement/CMakeFiles/rebuild_cache.dir
-/media/gg/Data/Github/perso/MaterialManagement/CMakeFiles/MaterialManagement.dir
-/media/gg/Data/Github/perso/MaterialManagement/CMakeFiles/edit_cache.dir
-/media/gg/Data/Github/perso/MaterialManagement/test/CMakeFiles/rebuild_cache.dir
-/media/gg/Data/Github/perso/MaterialManagement/test/CMakeFiles/material_test.dir
-/media/gg/Data/Github/perso/MaterialManagement/test/CMakeFiles/edit_cache.dir
