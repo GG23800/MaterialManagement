@@ -279,3 +279,154 @@ void heat_material::edit_from_json(nlohmann::json input_json)
         std::cout << "Problem with input json, heat material not edited" << std::endl;
     }
 }
+
+nlohmann::json heat_material::get_json()
+{
+    nlohmann::json ljson = nlohmann::json{};
+    ljson = material::get_json();
+    ljson["Density"] = Density;
+    ljson["SpecificHeat"] = SpecificHeat;
+    ljson["ThermalConductivity"] = ThermalConductivity;
+    return ljson;
+}
+
+MaterialList::MaterialList() : MaterialVector{material(0,"Void")}
+{
+    FileName = "MaterialList.json"; //default file name
+}
+
+void MaterialList::add_material(material new_material)
+{
+    new_material.edit_ID(MaterialVector.size());
+    MaterialVector.push_back(new_material);
+}
+
+void MaterialList::edit_material(unsigned int ID, material new_material)
+{
+    if (ID < MaterialVector.size())
+    {
+        if (ID != 0) // ID 0 is reserved for void material, can't be modify nor destroyed
+        {
+            new_material.edit_ID(ID);
+            MaterialVector[ID] = new_material;
+        }
+        else
+        {
+            std::clog << "Warning, can't modify material at ID 0, it is reserved for void material" << std::endl;
+        }
+    }
+    else
+    {
+        std::clog << "Warning, trying to edit an out of bound material, nothing is edited" << std::endl;
+    }
+}
+
+void MaterialList::delete_material(unsigned int ID)
+{
+    if (MaterialVector.size() == 1)
+    {
+        std::clog << "Warning, MaterialList contained only one element (the void material), can't delete it" << std::endl;
+    }
+    else
+    {
+        if (ID < MaterialVector.size())
+        {
+            if (ID != 0) // ID 0 is reserved for void material, can't be modify nor destroyed
+            {
+                MaterialVector.erase(MaterialVector.begin()+ID);
+                for (unsigned int k=0 ; k<MaterialVector.size() ; k++)
+                {
+                    MaterialVector[k].edit_ID(k);
+                }
+            }
+            else
+            {
+                std::clog << "Warning, can't delete material at ID 0, it is reserved for void material" << std::endl;
+            }
+        }
+        else
+        {
+            std::clog << "Warning, trying to delete an out of bound material, nothing is deleted" << std::endl;
+        }
+    }
+}
+
+void MaterialList::reset()
+{
+    MaterialVector.erase(MaterialVector.begin()+1,MaterialVector.end());
+}
+
+void MaterialList::load()
+{
+    std::ifstream InputJsonFile;
+    InputJsonFile.open(FileName);
+    if (!InputJsonFile)
+    {
+        std::clog << "Warning, can't open " << FileName << ", file doesn't exist or corrupted. New Material list file with only void material will be created" << std::endl;
+        std::ofstream OutputJsonFile;
+        OutputJsonFile.open(FileName);
+        if (!OutputJsonFile)
+        {
+            std::clog << "Error, can't create new material list file" << std::endl; // TODO stop program?
+        }
+        else
+        {
+            reset();
+            OutputJsonFile << get_json();
+            OutputJsonFile.close();
+        }
+    }
+    else
+    {
+        edit_from_json(nlohmann::json::parse(InputJsonFile));
+        InputJsonFile.close();
+    }
+}
+
+void MaterialList::save()
+{
+    std::ofstream OutputJsonFile;
+    OutputJsonFile.open(FileName);
+    if (!OutputJsonFile)
+    {
+        std::clog << "Error, can't open/create material list file" << std::endl; // TODO stop?
+    }
+    else
+    {
+        OutputJsonFile << get_json();
+        OutputJsonFile.close();
+    }
+}
+
+nlohmann::json MaterialList::get_json()
+{
+    nlohmann::json ljson = nlohmann::json{};
+    nlohmann::json OutputJson = nlohmann::json{};
+    for (unsigned int k=0 ; k<MaterialVector.size() ; k++)
+    {
+        ljson = MaterialVector[k].get_json();
+        OutputJson[k] = ljson;
+    }
+    return OutputJson;
+}
+
+void MaterialList::edit_from_json(nlohmann::json InputJson)
+{
+    int NumberOfMaterial = InputJson.size();
+    material lMaterial(0,"void");
+    if (NumberOfMaterial < 1)
+    {
+        std::clog << "Warning, json size is too small... Is it a list of material? Material list is reset" << std::endl;
+        reset();
+    }
+    else
+    {
+        std::vector<material> lv(NumberOfMaterial, lMaterial);
+        for (int k=1 ; k<NumberOfMaterial ; k++)
+        {
+            lMaterial.edit_from_json(InputJson[k]);
+            lv[k] = lMaterial;
+        }
+        MaterialVector = lv;
+    }
+}

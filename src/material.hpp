@@ -2,6 +2,7 @@
 #define MATERIAL_H
 
 #include<iostream>
+#include<fstream>
 
 #include"json.hpp"
 
@@ -11,8 +12,8 @@
 // Date: 2022/01
 // Version 1.0
 //
-// Comment: This librairy was created in order to manage material in simulation tool with the possibility to save materials in json format
-// First used if for thermal conduction problem
+// Comment: This librairy was created in order to manage material in simulation tool with the possibility to save material list in json format
+// First used is for thermal conduction problem
 // Depending on the need a class can be derived for other purpose (acoustic, electromagnetic, etc.)
 // MATERIAL_VERBOSE is used for test/debug purpose
 
@@ -32,6 +33,8 @@ public:
     void edit_ID(const int nID);
     void edit_name(const std::string nName);
 
+    int get_ID() {return ID;}
+    std::string get_name() {return Name;}
     nlohmann::json get_json();
 
 private:
@@ -39,15 +42,27 @@ private:
     int ID;
 };
 
-class material_group
+// Material ID is automatically manage by MaterialList
+// ID 0 is reserved for void material
+class MaterialList
 {
 public:
-    material_group();
-    material_group(material first_material);
-    material_group(std::vector<material> nMaterialVector);
+    MaterialList();
+    void add_material(material new_material);
+    void edit_material(unsigned int ID, material new_material);
+    void delete_material(unsigned int ID);
+    void reset();
+    std::string get_save_file_name() {return FileName;}
+    void set_save_file_name(std::string nFileName) {FileName = nFileName;}
+    void load();
+    void save();
 
+//private:
+    nlohmann::json get_json();
+    void edit_from_json(nlohmann::json input_json);
 private:
-    std::vector<material> material_vector;
+    std::vector<material> MaterialVector;
+    std::string FileName; // file name where MaterialList can be saved or loaded
 };
 
 class heat_material : public material
