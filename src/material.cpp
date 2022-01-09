@@ -78,7 +78,7 @@ void material::edit_material(const material OtherMaterial)
     Name = OtherMaterial.Name;
 }
 
-void material::edit_from_json(const nlohmann::json input_json)
+int material::edit_from_json(const nlohmann::json input_json)
 {
     int lerror = 0;
     int lID = 0;
@@ -110,6 +110,7 @@ void material::edit_from_json(const nlohmann::json input_json)
     {
         std::cout << "Problem with input json, material not edited" << std::endl;
     }
+    return lerror;
 }
 
 void material::edit_ID(const int nID)
@@ -235,11 +236,12 @@ void heat_material::edit_thermal_conductivity(float nThermalConductivity)
     ThermalConductivity = nThermalConductivity;
 }
 
-void heat_material::edit_from_json(nlohmann::json input_json)
+int heat_material::edit_from_json(nlohmann::json input_json)
 {
     int lerror = 0;
+    material test_material(material::get_ID(), material::get_name());
     float lDensity=0.f, lSpecificHeat=0.f, lThermalConductivity=0.f;
-    if (input_json.find("ID") != input_json.end())
+    if (input_json.find("Density") != input_json.end())
     {
         lDensity = input_json["Density"];
     }
@@ -266,10 +268,14 @@ void heat_material::edit_from_json(nlohmann::json input_json)
         lerror = 1;
         std::cout << "Warning, heat_material::edit_from_json(), ThermalConductivity not found in input json" << std::endl;
     }
+    if (!lerror)
+    {
+        lerror = test_material.edit_from_json(input_json);
+    }
 
     if (!lerror)
     {
-        material::edit_from_json(input_json);
+        material::edit_material(test_material);
         Density = lDensity;
         SpecificHeat = lSpecificHeat;
         ThermalConductivity = lThermalConductivity;
@@ -278,6 +284,7 @@ void heat_material::edit_from_json(nlohmann::json input_json)
     {
         std::cout << "Problem with input json, heat material not edited" << std::endl;
     }
+    return lerror;
 }
 
 nlohmann::json heat_material::get_json()

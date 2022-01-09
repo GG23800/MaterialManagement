@@ -86,8 +86,203 @@ TEST( Material_class, edit_functions)
     EXPECT_NE( ojson["Name"], ijson["Name"] );
     EXPECT_EQ( ojson["ID"], lID );
     EXPECT_EQ( ojson["Name"], lName );
+
+    // verify nothing is done if json is not complete
+    ijson = nlohmann::json{};
+    ijson["ID"] = 123;
+    m1.edit_from_json(ijson);
+    EXPECT_EQ( m1.get_ID(), lID );
+    EXPECT_EQ( m1.get_name(), lName);
+    ijson = nlohmann::json{};
+    ijson["Name"] = "bob";
+    m1.edit_from_json(ijson);
+    EXPECT_EQ( m1.get_ID(), lID );
+    EXPECT_EQ( m1.get_name(), lName);
+    // if type of variable is not respected if ID is a string for example nlohmann json has an assert to verifiy that
+    // if need of a special test to show function where the assert apply one can use typeid of <typeinfo>
 }
 
+TEST( HeatMaterial_class, constructor )
+{
+    // default name "unknowed", density 1, specific heat 1, thermal conductivity 1
+    // verify default value
+    std::string lName = "unknowed";
+    float lDensity = 1.f;
+    float lSpecificHeat = 1.f;
+    float lThermalConductivity = 1.f;
+    heat_material hm1(0);
+    EXPECT_EQ( hm1.get_name(), lName );
+    EXPECT_FLOAT_EQ( hm1.get_density(), lDensity );
+    EXPECT_FLOAT_EQ( hm1.get_specific_heat(), lSpecificHeat );
+    EXPECT_FLOAT_EQ( hm1.get_thermal_conductivity(), lThermalConductivity );
+    int lID = 87;
+    lName = "bazinga";
+    material m1(lID, lName);
+    heat_material hm2(m1);
+    EXPECT_EQ( hm2.get_ID(), lID );
+    EXPECT_EQ( hm2.get_name(), lName );
+    EXPECT_FLOAT_EQ( hm2.get_density(), lDensity );
+    EXPECT_FLOAT_EQ( hm2.get_specific_heat(), lSpecificHeat );
+    EXPECT_FLOAT_EQ( hm2.get_thermal_conductivity(), lThermalConductivity );
+    
+    // full constructor
+    lID = 23;
+    lName = "Rename";
+    lDensity = 2.98f;
+    lSpecificHeat = 3.14f;
+    lThermalConductivity = 93.78;
+    heat_material hm3(lID, lName, lDensity, lSpecificHeat, lThermalConductivity);
+    EXPECT_EQ( hm3.get_ID(), lID );
+    EXPECT_EQ( hm3.get_name(), lName );
+    EXPECT_FLOAT_EQ( hm3.get_density(), lDensity );
+    EXPECT_FLOAT_EQ( hm3.get_specific_heat(), lSpecificHeat );
+    EXPECT_FLOAT_EQ( hm3.get_thermal_conductivity(), lThermalConductivity );
+    lID = 10001;
+    lName = "#_o:!§ac";
+    m1.edit_material(lID, lName);
+    lDensity = 98.321f;
+    lSpecificHeat = 23458.121f;
+    lThermalConductivity = 743.81f;
+    heat_material hm4(m1, lDensity, lSpecificHeat, lThermalConductivity);
+    EXPECT_EQ( hm4.get_ID(), lID );
+    EXPECT_EQ( hm4.get_name(), lName );
+    EXPECT_FLOAT_EQ( hm4.get_density(), lDensity );
+    EXPECT_FLOAT_EQ( hm4.get_specific_heat(), lSpecificHeat );
+    EXPECT_FLOAT_EQ( hm4.get_thermal_conductivity(), lThermalConductivity );
+
+    // copy constructor
+    heat_material hm5(hm4);
+    EXPECT_EQ( hm5.get_ID(), lID );
+    EXPECT_EQ( hm5.get_name(), lName );
+    EXPECT_FLOAT_EQ( hm5.get_density(), lDensity );
+    EXPECT_FLOAT_EQ( hm5.get_specific_heat(), lSpecificHeat );
+    EXPECT_FLOAT_EQ( hm5.get_thermal_conductivity(), lThermalConductivity );
+    
+    // copy assignement
+    hm1 = hm5;
+    EXPECT_EQ( hm1.get_ID(), lID );
+    EXPECT_EQ( hm1.get_name(), lName );
+    EXPECT_FLOAT_EQ( hm1.get_density(), lDensity );
+    EXPECT_FLOAT_EQ( hm1.get_specific_heat(), lSpecificHeat );
+    EXPECT_FLOAT_EQ( hm1.get_thermal_conductivity(), lThermalConductivity );   
+    
+    // move assignement operator
+    hm2 = std::move(hm4);
+    EXPECT_EQ( hm2.get_ID(), lID );
+    EXPECT_EQ( hm2.get_name(), lName );
+    EXPECT_FLOAT_EQ( hm2.get_density(), lDensity );
+    EXPECT_FLOAT_EQ( hm2.get_specific_heat(), lSpecificHeat );
+    EXPECT_FLOAT_EQ( hm2.get_thermal_conductivity(), lThermalConductivity );
+    
+    // move constructor
+    heat_material hm6(std::move(hm5));
+    EXPECT_EQ( hm6.get_ID(), lID );
+    EXPECT_EQ( hm6.get_name(), lName );
+    EXPECT_FLOAT_EQ( hm6.get_density(), lDensity );
+    EXPECT_FLOAT_EQ( hm6.get_specific_heat(), lSpecificHeat );
+    EXPECT_FLOAT_EQ( hm6.get_thermal_conductivity(), lThermalConductivity );
+}
+
+TEST( HeatMaterial_class, edit_functions)
+{
+    heat_material hm1(64);
+    float lDensity = 12.873f;
+    float lSpecificHeat = 0.00037461f;
+    float lThermalConductivity = 1862538.5f;
+    // density edition
+    hm1.edit_density(lDensity);
+    EXPECT_FLOAT_EQ( hm1.get_density(), lDensity );
+    // specific heat
+    hm1.edit_specific_heat(lSpecificHeat);
+    EXPECT_FLOAT_EQ( hm1.get_specific_heat(), lSpecificHeat);
+    // thermal conductivity
+    hm1.edit_thermal_conductivity(lThermalConductivity);
+    EXPECT_FLOAT_EQ( hm1.get_thermal_conductivity(), lThermalConductivity);
+
+    // edition from json
+    int lID = 623;
+    std::string lName = "apodicnrehumsqfjkdsfhu";
+    lDensity = 0.0072635f;
+    lSpecificHeat = 2.736645f;
+    lThermalConductivity = 3726.473624f;
+    nlohmann::json ijson{};
+    ijson["ID"] = lID;
+    ijson["Name"] = lName;
+    ijson["Density"] = lDensity;
+    ijson["SpecificHeat"] = lSpecificHeat;
+    ijson["ThermalConductivity"] = lThermalConductivity;
+    hm1.edit_from_json(ijson);
+    EXPECT_EQ( hm1.get_ID(), lID );
+    EXPECT_EQ( hm1.get_name(), lName);
+    EXPECT_FLOAT_EQ( hm1.get_density(), lDensity );
+    EXPECT_FLOAT_EQ( hm1.get_specific_heat(), lSpecificHeat );
+    EXPECT_FLOAT_EQ( hm1.get_thermal_conductivity(), lThermalConductivity );
+    //missing part of material
+    //test was made on material, check heat material is not edited if material should not be edited
+    int nID = 52;
+    std::string nName = "idneabdo";
+    float nDensity = 372.97f;
+    float nSpecificHeat = 29.17263f;
+    float nThermalConductivity = 82173.2726f;
+    heat_material hm2(nID, nName, nDensity, nSpecificHeat, nThermalConductivity);
+    ijson = nlohmann::json{};
+    ijson["ID"] = lID;
+    //ijson["Name"] = lName;
+    ijson["Density"] = lDensity;
+    ijson["SpecificHeat"] = lSpecificHeat;
+    ijson["ThermalConductivity"] = lThermalConductivity;
+    hm2.edit_from_json(ijson);
+    EXPECT_EQ( hm2.get_ID(), nID );
+    EXPECT_EQ( hm2.get_name(), nName);
+    EXPECT_FLOAT_EQ( hm2.get_density(), nDensity );
+    EXPECT_FLOAT_EQ( hm2.get_specific_heat(), nSpecificHeat );
+    EXPECT_FLOAT_EQ( hm2.get_thermal_conductivity(), nThermalConductivity );
+    //missing part of heat specificity
+    ijson = nlohmann::json{};
+    ijson["ID"] = lID;
+    ijson["Name"] = lName;
+    //ijson["Density"] = lDensity;
+    ijson["SpecificHeat"] = lSpecificHeat;
+    ijson["ThermalConductivity"] = lThermalConductivity;
+    hm2.edit_from_json(ijson);
+    EXPECT_EQ( hm2.get_ID(), nID );
+    EXPECT_EQ( hm2.get_name(), nName);
+    EXPECT_FLOAT_EQ( hm2.get_density(), nDensity );
+    EXPECT_FLOAT_EQ( hm2.get_specific_heat(), nSpecificHeat );
+    EXPECT_FLOAT_EQ( hm2.get_thermal_conductivity(), nThermalConductivity );
+    ijson = nlohmann::json{};
+    ijson["ID"] = lID;
+    ijson["Name"] = lName;
+    ijson["Density"] = lDensity;
+    //ijson["SpecificHeat"] = lSpecificHeat;
+    ijson["ThermalConductivity"] = lThermalConductivity;
+    hm2.edit_from_json(ijson);
+    EXPECT_EQ( hm2.get_ID(), nID );
+    EXPECT_EQ( hm2.get_name(), nName);
+    EXPECT_FLOAT_EQ( hm2.get_density(), nDensity );
+    EXPECT_FLOAT_EQ( hm2.get_specific_heat(), nSpecificHeat );
+    EXPECT_FLOAT_EQ( hm2.get_thermal_conductivity(), nThermalConductivity );
+    ijson = nlohmann::json{};
+    ijson["ID"] = lID;
+    ijson["Name"] = lName;
+    ijson["Density"] = lDensity;
+    ijson["SpecificHeat"] = lSpecificHeat;
+    //ijson["ThermalConductivity"] = lThermalConductivity;
+    hm2.edit_from_json(ijson);
+    EXPECT_EQ( hm2.get_ID(), nID );
+    EXPECT_EQ( hm2.get_name(), nName);
+    EXPECT_FLOAT_EQ( hm2.get_density(), nDensity );
+    EXPECT_FLOAT_EQ( hm2.get_specific_heat(), nSpecificHeat );
+    EXPECT_FLOAT_EQ( hm2.get_thermal_conductivity(), nThermalConductivity );
+
+    // test outpu json
+    nlohmann::json ojson = hm2.get_json();
+    EXPECT_EQ( ojson["ID"], nID );
+    EXPECT_EQ( ojson["Name"], nName);
+    EXPECT_FLOAT_EQ( ojson["Density"], nDensity );
+    EXPECT_FLOAT_EQ( ojson["SpecificHeat"], nSpecificHeat );
+    EXPECT_FLOAT_EQ( ojson["ThermalConductivity"], nThermalConductivity );
+}
 
 int main(int argc, char *argv[])
 {

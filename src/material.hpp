@@ -27,15 +27,17 @@ public:
     material& operator=(material &&other); //move assignement operator
     ~material();
 
+    // edit functions
     void edit_material(const int nID,  const std::string nName);
     void edit_material(const material OtherMaterial);
-    void edit_from_json(const nlohmann::json input_json);
+    virtual int edit_from_json(const nlohmann::json input_json);
     void edit_ID(const int nID);
     void edit_name(const std::string nName);
 
+    // get functions
     int get_ID() {return ID;}
     std::string get_name() {return Name;}
-    nlohmann::json get_json();
+    virtual nlohmann::json get_json();
 
 private:
     std::string Name;
@@ -76,10 +78,16 @@ public:
     heat_material& operator=(heat_material &&other); //move assignement operator
     ~heat_material();
 
+    // edit functions
     void edit_density(float nDensity);
     void edit_specific_heat(float nSpecificHeat);
     void edit_thermal_conductivity(float nThermalConductivity);
-    void edit_from_json(nlohmann::json input_json);
+    int edit_from_json(nlohmann::json input_json);
+
+    // get functions
+    float get_density() {return Density;}
+    float get_specific_heat() {return SpecificHeat;}
+    float get_thermal_conductivity() {return ThermalConductivity;}
     nlohmann::json get_json();
 
 private:
