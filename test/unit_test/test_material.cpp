@@ -11,22 +11,22 @@ TEST( Material_class, constructor )
 {
     // verify default name
     std::string lName = "unknowed";
-    material m1(0);
+    Material m1(0);
     EXPECT_EQ( m1.get_name(), lName );
     // full constructor
     int lID = 23;
     lName = "Rename";
-    material m2(lID, lName);
+    Material m2(lID, lName);
     EXPECT_EQ( m2.get_ID(), lID );
     EXPECT_EQ( m2.get_name(), lName);
     // copy constructor
-    material m3(m2);    
+    Material m3(m2);    
     EXPECT_EQ( m3.get_ID(), lID );
     EXPECT_EQ( m3.get_name(), lName);
     // copy assignement
     lID = 42;
     lName = "NewName";
-    material m4(lID, lName);
+    Material m4(lID, lName);
     m2 = m4;
     EXPECT_EQ( m2.get_ID(), lID );
     EXPECT_EQ( m2.get_name(), lName);
@@ -35,14 +35,14 @@ TEST( Material_class, constructor )
     EXPECT_EQ( m4.get_ID(), 0 );
     EXPECT_EQ( m4.get_name(), "unknowed");
     // move constructor
-    material m5(std::move(m2));
+    Material m5(std::move(m2));
     EXPECT_EQ( m5.get_ID(), lID );
     EXPECT_EQ( m5.get_name(), lName);
 }
 
 TEST( Material_class, edit_functions)
 {
-    material m1(0);
+    Material m1(0);
     int lID = 942;
     std::string lName = "Az5_i)~%";
     // full material edition
@@ -52,7 +52,7 @@ TEST( Material_class, edit_functions)
     // full material edition with material
     lID = 56;
     lName = "adsxio";
-    material m2(lID, lName);
+    Material m2(lID, lName);
     m1.edit_material(m2);    
     EXPECT_EQ( m1.get_ID(), lID );
     EXPECT_EQ( m1.get_name(), lName);
@@ -110,15 +110,15 @@ TEST( HeatMaterial_class, constructor )
     float lDensity = 1.f;
     float lSpecificHeat = 1.f;
     float lThermalConductivity = 1.f;
-    heat_material hm1(0);
+    HeatMaterial hm1(0);
     EXPECT_EQ( hm1.get_name(), lName );
     EXPECT_FLOAT_EQ( hm1.get_density(), lDensity );
     EXPECT_FLOAT_EQ( hm1.get_specific_heat(), lSpecificHeat );
     EXPECT_FLOAT_EQ( hm1.get_thermal_conductivity(), lThermalConductivity );
     int lID = 87;
     lName = "bazinga";
-    material m1(lID, lName);
-    heat_material hm2(m1);
+    Material m1(lID, lName);
+    HeatMaterial hm2(m1);
     EXPECT_EQ( hm2.get_ID(), lID );
     EXPECT_EQ( hm2.get_name(), lName );
     EXPECT_FLOAT_EQ( hm2.get_density(), lDensity );
@@ -131,7 +131,7 @@ TEST( HeatMaterial_class, constructor )
     lDensity = 2.98f;
     lSpecificHeat = 3.14f;
     lThermalConductivity = 93.78;
-    heat_material hm3(lID, lName, lDensity, lSpecificHeat, lThermalConductivity);
+    HeatMaterial hm3(lID, lName, lDensity, lSpecificHeat, lThermalConductivity);
     EXPECT_EQ( hm3.get_ID(), lID );
     EXPECT_EQ( hm3.get_name(), lName );
     EXPECT_FLOAT_EQ( hm3.get_density(), lDensity );
@@ -143,7 +143,7 @@ TEST( HeatMaterial_class, constructor )
     lDensity = 98.321f;
     lSpecificHeat = 23458.121f;
     lThermalConductivity = 743.81f;
-    heat_material hm4(m1, lDensity, lSpecificHeat, lThermalConductivity);
+    HeatMaterial hm4(m1, lDensity, lSpecificHeat, lThermalConductivity);
     EXPECT_EQ( hm4.get_ID(), lID );
     EXPECT_EQ( hm4.get_name(), lName );
     EXPECT_FLOAT_EQ( hm4.get_density(), lDensity );
@@ -151,7 +151,7 @@ TEST( HeatMaterial_class, constructor )
     EXPECT_FLOAT_EQ( hm4.get_thermal_conductivity(), lThermalConductivity );
 
     // copy constructor
-    heat_material hm5(hm4);
+    HeatMaterial hm5(hm4);
     EXPECT_EQ( hm5.get_ID(), lID );
     EXPECT_EQ( hm5.get_name(), lName );
     EXPECT_FLOAT_EQ( hm5.get_density(), lDensity );
@@ -175,7 +175,7 @@ TEST( HeatMaterial_class, constructor )
     EXPECT_FLOAT_EQ( hm2.get_thermal_conductivity(), lThermalConductivity );
     
     // move constructor
-    heat_material hm6(std::move(hm5));
+    HeatMaterial hm6(std::move(hm5));
     EXPECT_EQ( hm6.get_ID(), lID );
     EXPECT_EQ( hm6.get_name(), lName );
     EXPECT_FLOAT_EQ( hm6.get_density(), lDensity );
@@ -185,7 +185,7 @@ TEST( HeatMaterial_class, constructor )
 
 TEST( HeatMaterial_class, edit_functions)
 {
-    heat_material hm1(64);
+    HeatMaterial hm1(64);
     float lDensity = 12.873f;
     float lSpecificHeat = 0.00037461f;
     float lThermalConductivity = 1862538.5f;
@@ -224,7 +224,7 @@ TEST( HeatMaterial_class, edit_functions)
     float nDensity = 372.97f;
     float nSpecificHeat = 29.17263f;
     float nThermalConductivity = 82173.2726f;
-    heat_material hm2(nID, nName, nDensity, nSpecificHeat, nThermalConductivity);
+    HeatMaterial hm2(nID, nName, nDensity, nSpecificHeat, nThermalConductivity);
     ijson = nlohmann::json{};
     ijson["ID"] = lID;
     //ijson["Name"] = lName;

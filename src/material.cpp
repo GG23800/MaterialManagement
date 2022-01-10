@@ -1,6 +1,6 @@
 #include "material.hpp"
 
-material::material(int nID, std::string nName)
+Material::Material(int nID, std::string nName)
 {
     #if MATERIAL_VERBOSE == 1
         std::cout << "Material constructor" << std::endl;
@@ -8,7 +8,7 @@ material::material(int nID, std::string nName)
     edit_material(nID, nName);
 }
 
-material::material(const material &other) // copy constructor
+Material::Material(const Material &other) // copy constructor
 {
     #if MATERIAL_VERBOSE == 1
         std::cout << "Material copy constructor" << std::endl;
@@ -17,7 +17,7 @@ material::material(const material &other) // copy constructor
     Name = other.Name;
 }
 
-material& material::operator=(const material &other) //copy assignement operator
+Material& Material::operator=(const Material &other) //copy assignement operator
 {
     #if MATERIAL_VERBOSE == 1
         std::cout << "Material copy assignement operator" << std::endl;
@@ -30,7 +30,7 @@ material& material::operator=(const material &other) //copy assignement operator
     return *this;
 }
 
-material::material(material &&other) //move constructor
+Material::Material(Material &&other) //move constructor
 {
     #if MATERIAL_VERBOSE == 1
         std::cout << "Material move constructor" << std::endl;
@@ -42,7 +42,7 @@ material::material(material &&other) //move constructor
     other.Name = "";
 }
 
-material& material::operator=(material &&other) //move assignement operator
+Material& Material::operator=(Material &&other) //move assignement operator
 {
     #if MATERIAL_VERBOSE == 1
         std::cout << "Material move assignement operator" << std::endl;
@@ -58,7 +58,7 @@ material& material::operator=(material &&other) //move assignement operator
     return *this;
 }
 
-material::~material()
+Material::~Material()
 {
     #if MATERIAL_VERBOSE == 1
         std::cout << "Material destructor" << std::endl;
@@ -66,19 +66,19 @@ material::~material()
 }
 
 
-void material::edit_material(const int nID, const std::string nName)
+void Material::edit_material(const int nID, const std::string nName)
 {
     ID = nID;
     Name = nName;
 }
 
-void material::edit_material(const material OtherMaterial)
+void Material::edit_material(const Material OtherMaterial)
 {
     ID = OtherMaterial.ID;
     Name = OtherMaterial.Name;
 }
 
-int material::edit_from_json(const nlohmann::json input_json)
+int Material::edit_from_json(const nlohmann::json input_json)
 {
     int lerror = 0;
     int lID = 0;
@@ -90,7 +90,7 @@ int material::edit_from_json(const nlohmann::json input_json)
     else 
     {
         lerror = 1;
-        std::cout << "Warning, material::edit_material_from_json(), ID not found in input json" << std::endl;
+        std::cout << "Warning, Material::edit_material_from_json(), ID not found in input json" << std::endl;
     }
     if (input_json.find("Name") != input_json.end())
     {
@@ -99,7 +99,7 @@ int material::edit_from_json(const nlohmann::json input_json)
     else 
     {
         lerror = 1;
-        std::cout << "Warning, material::edit_material_from_json(), Name not found in input json" << std::endl;
+        std::cout << "Warning, Material::edit_material_from_json(), Name not found in input json" << std::endl;
     }
     if (!lerror)
     {
@@ -113,17 +113,17 @@ int material::edit_from_json(const nlohmann::json input_json)
     return lerror;
 }
 
-void material::edit_ID(const int nID)
+void Material::edit_ID(const int nID)
 {
     ID = nID;
 }
 
-void material::edit_name(const std::string nName)
+void Material::edit_name(const std::string nName)
 {
     Name = nName;
 }
 
-nlohmann::json material::get_json()
+nlohmann::json Material::get_json()
 {
     nlohmann::json ljson = nlohmann::json{};
     ljson["ID"] = ID;
@@ -136,7 +136,7 @@ nlohmann::json material::get_json()
 
 
 
-heat_material::heat_material(int nID, std::string nName, float nDensity, float nSpecificHeat, float nThermalConductivity) : material(nID, nName)
+HeatMaterial::HeatMaterial(int nID, std::string nName, float nDensity, float nSpecificHeat, float nThermalConductivity) : Material(nID, nName)
 {
     #if MATERIAL_VERBOSE == 1
         std::cout << "Heat Material constructor" << std::endl;
@@ -146,7 +146,7 @@ heat_material::heat_material(int nID, std::string nName, float nDensity, float n
     ThermalConductivity = nThermalConductivity;
 }
 
-heat_material::heat_material(material nMaterial, float nDensity, float nSpecificHeat, float nThermalConductivity) : material(nMaterial)
+HeatMaterial::HeatMaterial(Material nMaterial, float nDensity, float nSpecificHeat, float nThermalConductivity) : Material(nMaterial)
 {
     #if MATERIAL_VERBOSE == 1
         std::cout << "Heat Material constructor with material parameter" << std::endl;
@@ -156,7 +156,7 @@ heat_material::heat_material(material nMaterial, float nDensity, float nSpecific
     ThermalConductivity = nThermalConductivity;
 }
 
-heat_material::heat_material(const heat_material &other) : material(other) // copy constructor
+HeatMaterial::HeatMaterial(const HeatMaterial &other) : Material(other) // copy constructor
 {
     #if MATERIAL_VERBOSE == 1
         std::cout << "Heat Material copy constructor" << std::endl;
@@ -166,16 +166,14 @@ heat_material::heat_material(const heat_material &other) : material(other) // co
     ThermalConductivity = other.ThermalConductivity;
 }
 
-heat_material& heat_material::operator=(const heat_material &other) //copy assignement operator
+HeatMaterial& HeatMaterial::operator=(const HeatMaterial &other) //copy assignement operator
 {
     #if MATERIAL_VERBOSE == 1
         std::cout << "Heat Material copy assignement operator" << std::endl;
     #endif
     if (this != &other)
     {
-        material::operator=(other);
-        // or
-        //using material::operator=;
+        Material::operator=(other);
         Density = other.Density;
         SpecificHeat = other.SpecificHeat;
         ThermalConductivity = other.ThermalConductivity;
@@ -183,7 +181,7 @@ heat_material& heat_material::operator=(const heat_material &other) //copy assig
     return *this;
 }
 
-heat_material::heat_material(heat_material &&other) : material(other) //move constructor
+HeatMaterial::HeatMaterial(HeatMaterial &&other) : Material(other) //move constructor
 {
     #if MATERIAL_VERBOSE == 1
         std::cout << "Heat Material move constructor" << std::endl;
@@ -197,14 +195,14 @@ heat_material::heat_material(heat_material &&other) : material(other) //move con
     other.ThermalConductivity = 0.f;
 }
 
-heat_material& heat_material::operator=(heat_material &&other) //move assignement operator
+HeatMaterial& HeatMaterial::operator=(HeatMaterial &&other) //move assignement operator
 {
     #if MATERIAL_VERBOSE == 1
         std::cout << "Heat Material move assignement operator" << std::endl;
     #endif
    if (this != &other)
     {
-        material::operator=(other);
+        Material::operator=(other);
         Density = other.Density;
         SpecificHeat = other.SpecificHeat;
         ThermalConductivity = other.ThermalConductivity;
@@ -216,30 +214,30 @@ heat_material& heat_material::operator=(heat_material &&other) //move assignemen
     return *this;
 }
 
-heat_material::~heat_material()
+HeatMaterial::~HeatMaterial()
 {
     #if MATERIAL_VERBOSE == 1
         std::cout << "Heat Material destructor" << std::endl;
     #endif
 }
 
-void heat_material::edit_density(float nDensity)
+void HeatMaterial::edit_density(float nDensity)
 {
     Density = nDensity;
 }
-void heat_material::edit_specific_heat(float nSpecificHeat)
+void HeatMaterial::edit_specific_heat(float nSpecificHeat)
 {
     SpecificHeat = nSpecificHeat;
 }
-void heat_material::edit_thermal_conductivity(float nThermalConductivity)
+void HeatMaterial::edit_thermal_conductivity(float nThermalConductivity)
 {
     ThermalConductivity = nThermalConductivity;
 }
 
-int heat_material::edit_from_json(nlohmann::json input_json)
+int HeatMaterial::edit_from_json(nlohmann::json input_json)
 {
     int lerror = 0;
-    material test_material(material::get_ID(), material::get_name());
+    Material test_material(Material::get_ID(), Material::get_name());
     float lDensity=0.f, lSpecificHeat=0.f, lThermalConductivity=0.f;
     if (input_json.find("Density") != input_json.end())
     {
@@ -248,7 +246,7 @@ int heat_material::edit_from_json(nlohmann::json input_json)
     else 
     {
         lerror = 1;
-        std::cout << "Warning, heat_material::edit_from_json(), Density not found in input json" << std::endl;
+        std::cout << "Warning, HeatMaterial::edit_from_json(), Density not found in input json" << std::endl;
     }
     if (input_json.find("SpecificHeat") != input_json.end())
     {
@@ -257,7 +255,7 @@ int heat_material::edit_from_json(nlohmann::json input_json)
     else 
     {
         lerror = 1;
-        std::cout << "Warning, heat_material::edit_from_json(), SpecificHeat not found in input json" << std::endl;
+        std::cout << "Warning, HeatMaterial::edit_from_json(), SpecificHeat not found in input json" << std::endl;
     }
     if (input_json.find("ThermalConductivity") != input_json.end())
     {
@@ -266,7 +264,7 @@ int heat_material::edit_from_json(nlohmann::json input_json)
     else 
     {
         lerror = 1;
-        std::cout << "Warning, heat_material::edit_from_json(), ThermalConductivity not found in input json" << std::endl;
+        std::cout << "Warning, HeatMaterial::edit_from_json(), ThermalConductivity not found in input json" << std::endl;
     }
     if (!lerror)
     {
@@ -275,7 +273,7 @@ int heat_material::edit_from_json(nlohmann::json input_json)
 
     if (!lerror)
     {
-        material::edit_material(test_material);
+        Material::edit_material(test_material);
         Density = lDensity;
         SpecificHeat = lSpecificHeat;
         ThermalConductivity = lThermalConductivity;
@@ -287,28 +285,28 @@ int heat_material::edit_from_json(nlohmann::json input_json)
     return lerror;
 }
 
-nlohmann::json heat_material::get_json()
+nlohmann::json HeatMaterial::get_json()
 {
     nlohmann::json ljson = nlohmann::json{};
-    ljson = material::get_json();
+    ljson = Material::get_json();
     ljson["Density"] = Density;
     ljson["SpecificHeat"] = SpecificHeat;
     ljson["ThermalConductivity"] = ThermalConductivity;
     return ljson;
 }
 
-MaterialList::MaterialList() : MaterialVector{material(0,"Void")}
+MaterialList::MaterialList() : MaterialVector{Material(0,"Void")}
 {
     FileName = "MaterialList.json"; //default file name
 }
 
-void MaterialList::add_material(material new_material)
+void MaterialList::add_material(Material new_material)
 {
     new_material.edit_ID(MaterialVector.size());
     MaterialVector.push_back(new_material);
 }
 
-void MaterialList::edit_material(unsigned int ID, material new_material)
+void MaterialList::edit_material(unsigned int ID, Material new_material)
 {
     if (ID < MaterialVector.size())
     {
@@ -420,7 +418,7 @@ nlohmann::json MaterialList::get_json()
 void MaterialList::edit_from_json(nlohmann::json InputJson)
 {
     int NumberOfMaterial = InputJson.size();
-    material lMaterial(0,"void");
+    Material lMaterial(0,"void");
     if (NumberOfMaterial < 1)
     {
         std::clog << "Warning, json size is too small... Is it a list of material? Material list is reset" << std::endl;
@@ -428,7 +426,7 @@ void MaterialList::edit_from_json(nlohmann::json InputJson)
     }
     else
     {
-        std::vector<material> lv(NumberOfMaterial, lMaterial);
+        std::vector<Material> lv(NumberOfMaterial, lMaterial);
         for (int k=1 ; k<NumberOfMaterial ; k++)
         {
             lMaterial.edit_from_json(InputJson[k]);
