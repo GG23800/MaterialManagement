@@ -198,10 +198,25 @@ TEST( HeatMaterial_class, edit_functions)
     // thermal conductivity
     hm1.edit_thermal_conductivity(lThermalConductivity);
     EXPECT_FLOAT_EQ( hm1.get_thermal_conductivity(), lThermalConductivity);
+    // full material edition
+    hm1 = HeatMaterial(64);
+    // check default value is set
+    EXPECT_FLOAT_EQ( hm1.get_density(), 1.f );
+    EXPECT_FLOAT_EQ( hm1.get_specific_heat(), 1.f );
+    EXPECT_FLOAT_EQ( hm1.get_thermal_conductivity(), 1.f );
+    int lID = 39;
+    std::string lName = "gdqfuoph";
+    HeatMaterial nhm(lID, lName, lDensity, lSpecificHeat, lThermalConductivity);
+    hm1.edit_material(nhm);
+    EXPECT_EQ( hm1.get_ID(), lID );
+    EXPECT_EQ( hm1.get_name(), lName);
+    EXPECT_FLOAT_EQ( hm1.get_density(), lDensity );
+    EXPECT_FLOAT_EQ( hm1.get_specific_heat(), lSpecificHeat );
+    EXPECT_FLOAT_EQ( hm1.get_thermal_conductivity(), lThermalConductivity );   
 
     // edition from json
-    int lID = 623;
-    std::string lName = "apodicnrehumsqfjkdsfhu";
+    lID = 623;
+    lName = "apodicnrehumsqfjkdsfhu";
     lDensity = 0.0072635f;
     lSpecificHeat = 2.736645f;
     lThermalConductivity = 3726.473624f;
@@ -275,13 +290,14 @@ TEST( HeatMaterial_class, edit_functions)
     EXPECT_FLOAT_EQ( hm2.get_specific_heat(), nSpecificHeat );
     EXPECT_FLOAT_EQ( hm2.get_thermal_conductivity(), nThermalConductivity );
 
-    // test outpu json
+    // test output json
     nlohmann::json ojson = hm2.get_json();
     EXPECT_EQ( ojson["ID"], nID );
     EXPECT_EQ( ojson["Name"], nName);
     EXPECT_FLOAT_EQ( ojson["Density"], nDensity );
     EXPECT_FLOAT_EQ( ojson["SpecificHeat"], nSpecificHeat );
     EXPECT_FLOAT_EQ( ojson["ThermalConductivity"], nThermalConductivity );
+
 }
 
 int main(int argc, char *argv[])

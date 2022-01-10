@@ -3,6 +3,7 @@
 
 #include<iostream>
 #include<fstream>
+#include<typeinfo>
 
 #include"json.hpp"
 
@@ -16,6 +17,13 @@
 // First used is for thermal conduction problem
 // Depending on the need a class can be derived for other purpose (acoustic, electromagnetic, etc.)
 // MATERIAL_VERBOSE is used for test/debug purpose
+
+enum MaterialType
+{
+    basic_material = 0,
+    heat_material,
+    number_of_type
+};
 
 class Material
 {
@@ -44,28 +52,6 @@ private:
     int ID;
 };
 
-// Material ID is automatically manage by MaterialList
-// ID 0 is reserved for void material
-class MaterialList
-{
-public:
-    MaterialList();
-    void add_material(Material new_material);
-    void edit_material(unsigned int ID, Material new_material);
-    void delete_material(unsigned int ID);
-    void reset();
-    std::string get_save_file_name() {return FileName;}
-    void set_save_file_name(std::string nFileName) {FileName = nFileName;}
-    void load();
-    void save();
-
-//private:
-    nlohmann::json get_json();
-    void edit_from_json(nlohmann::json input_json);
-private:
-    std::vector<Material> MaterialVector;
-    std::string FileName; // file name where MaterialList can be saved or loaded
-};
 
 class HeatMaterial : public Material
 {
@@ -79,10 +65,11 @@ public:
     ~HeatMaterial();
 
     // edit functions
+    void edit_material(const HeatMaterial OtherMaterial);
     void edit_density(float nDensity);
     void edit_specific_heat(float nSpecificHeat);
     void edit_thermal_conductivity(float nThermalConductivity);
-    int edit_from_json(nlohmann::json input_json);
+    virtual int edit_from_json(nlohmann::json input_json);
 
     // get functions
     float get_density() {return Density;}
@@ -96,6 +83,34 @@ private:
     float ThermalConductivity;
 };
 
-// TODO heat material group
+
+// Material ID is automatically manage by MaterialList
+// ID 0 is reserved for void material
+// to take benefit of polymorphisme we use a container of Material*
+// we use a unique_ptr so we don't have to worry about destructors
+class MaterialList
+{
+public:
+    MaterialList(MaterialType nmt);
+    void add_material(const Material &new_material);
+    void add_material(const HeatMaterial &new_heat_materiao);
+    void edit_material(unsigned int ID, const Material &new_material);
+    void edit_material(unsigned int ID, const HeatMaterial &new_heat_material);
+    void delete_material(unsigned int ID);
+    void reset();
+    std::string get_save_file_name() {return FileName;}
+    void set_save_file_name(std::string nFileName) {FileName = nFileName;}
+
+    void load();
+    void save();
+
+//private:
+    nlohmann::json get_json();
+    void edit_from_json(nlohmann::json input_json);
+private:
+    MaterialType ListMaterialType;
+    std::vector< std::unique_ptr<Material> > MaterialVector;
+    std::string FileName; // file name where MaterialList can be saved or loaded
+};
 
 #endif // MATERIAL_H

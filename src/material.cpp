@@ -1,5 +1,6 @@
 #include "material.hpp"
 
+// Material class
 Material::Material(int nID, std::string nName)
 {
     #if MATERIAL_VERBOSE == 1
@@ -133,9 +134,7 @@ nlohmann::json Material::get_json()
 }
 
 
-
-
-
+// HeatMaterial class
 HeatMaterial::HeatMaterial(int nID, std::string nName, float nDensity, float nSpecificHeat, float nThermalConductivity) : Material(nID, nName)
 {
     #if MATERIAL_VERBOSE == 1
@@ -221,6 +220,14 @@ HeatMaterial::~HeatMaterial()
     #endif
 }
 
+void HeatMaterial::edit_material(const HeatMaterial OtherMaterial)
+{
+    Material::edit_material(OtherMaterial);
+    Density = OtherMaterial.Density;
+    SpecificHeat = OtherMaterial.SpecificHeat;
+    ThermalConductivity = OtherMaterial.ThermalConductivity;
+}
+
 void HeatMaterial::edit_density(float nDensity)
 {
     Density = nDensity;
@@ -295,34 +302,108 @@ nlohmann::json HeatMaterial::get_json()
     return ljson;
 }
 
-MaterialList::MaterialList() : MaterialVector{Material(0,"Void")}
+
+// MaterialList class
+MaterialList::MaterialList(MaterialType nmt) : MaterialVector{}
 {
     FileName = "MaterialList.json"; //default file name
-}
-
-void MaterialList::add_material(Material new_material)
-{
-    new_material.edit_ID(MaterialVector.size());
-    MaterialVector.push_back(new_material);
-}
-
-void MaterialList::edit_material(unsigned int ID, Material new_material)
-{
-    if (ID < MaterialVector.size())
+    ListMaterialType = nmt;
+    std::unique_ptr<Material> lm(new Material(0,"Void"));
+    std::unique_ptr<HeatMaterial> lhm(new HeatMaterial(0,"Void"));
+    switch(nmt)
     {
-        if (ID != 0) // ID 0 is reserved for void material, can't be modify nor destroyed
+        case basic_material:
+            MaterialVector.emplace_back(std::move(lm));
+            break;
+        case heat_material:
+            MaterialVector.emplace_back(std::move(lhm));
+            break;
+        default:
+            std::clog << "Warning, asked material type for initalizing material type is unknowed or not implement yet" << std::endl;
+            break;
+    }
+}
+
+void MaterialList::add_material(const Material &new_material)
+{
+    if (ListMaterialType != basic_material)
+    {
+        std::unique_ptr<Material> lm(new Material(new_material));
+        lm->edit_ID( MaterialVector.size() );
+        // std::move is mandatory to give ownership to the vector
+        MaterialVector.emplace_back( std::move(lm) );
+    }
+    else
+    {
+        std::clog << "Warning, trying to add a basic material to a list of non basic material" << std::endl;
+    }
+}
+
+void MaterialList::add_material(const HeatMaterial &new_heat_material)
+{
+    if (ListMaterialType != heat_material)
+    {
+        std::unique_ptr<HeatMaterial> lhm(new HeatMaterial(new_heat_material));
+        lhm->edit_ID( MaterialVector.size() );
+        MaterialVector.emplace_back( std::move(lhm) );
+    }
+    else
+    {
+        std::clog << "Warning, trying to add a heat material to a list of non heat material" << std::endl;
+    }
+}
+
+void MaterialList::edit_material(unsigned int ID, const Material &new_material)
+{
+    if (ListMaterialType != basic_material)
+    {
+        if (ID < MaterialVector.size())
         {
-            new_material.edit_ID(ID);
-            MaterialVector[ID] = new_material;
+            if (ID != 0) // ID 0 is reserved for void material, can't be modify nor destroyed
+            {
+                MaterialVector[ID]->edit_material(new_material);
+                MaterialVector[ID]->edit_ID(ID);
+            }
+            else
+            {
+                std::clog << "Warning, can't modify material at ID 0, it is reserved for void material" << std::endl;
+            }
         }
         else
         {
-            std::clog << "Warning, can't modify material at ID 0, it is reserved for void material" << std::endl;
+            std::clog << "Warning, trying to edit an out of bound material, nothing is edited" << std::endl;
         }
     }
     else
     {
-        std::clog << "Warning, trying to edit an out of bound material, nothing is edited" << std::endl;
+        std::clog << "Warning, trying to edit a basic material, whereas it is not a list of basic material" << std::endl;
+    }
+}
+
+void MaterialList::edit_material(unsigned int ID, const HeatMaterial &new_material)
+{
+    if (ListMaterialType != heat_material)
+    {
+        if (ID < MaterialVector.size())
+        {
+            if (ID != 0) // ID 0 is reserved for void material, can't be modify nor destroyed
+            {
+                MaterialVector[ID]->edit_material(new_material);
+                MaterialVector[ID]->edit_ID(ID);
+            }
+            else
+            {
+                std::clog << "Warning, can't modify material at ID 0, it is reserved for void material" << std::endl;
+            }
+        }
+        else
+        {
+            std::clog << "Warning, trying to edit an out of bound material, nothing is edited" << std::endl;
+        }
+    }
+    else
+    {
+        std::clog << "Warning, trying to edit a heat material, whereas it is not a list of heat material" << std::endl;
     }
 }
 
@@ -341,7 +422,7 @@ void MaterialList::delete_material(unsigned int ID)
                 MaterialVector.erase(MaterialVector.begin()+ID);
                 for (unsigned int k=0 ; k<MaterialVector.size() ; k++)
                 {
-                    MaterialVector[k].edit_ID(k);
+                    MaterialVector[k]->edit_ID(k);
                 }
             }
             else
@@ -409,7 +490,7 @@ nlohmann::json MaterialList::get_json()
     nlohmann::json OutputJson = nlohmann::json{};
     for (unsigned int k=0 ; k<MaterialVector.size() ; k++)
     {
-        ljson = MaterialVector[k].get_json();
+        ljson = MaterialVector[k]->get_json();
         OutputJson[k] = ljson;
     }
     return OutputJson;
@@ -417,8 +498,8 @@ nlohmann::json MaterialList::get_json()
 
 void MaterialList::edit_from_json(nlohmann::json InputJson)
 {
-    int NumberOfMaterial = InputJson.size();
-    Material lMaterial(0,"void");
+/*    int NumberOfMaterial = InputJson.size();
+    Material lMaterial(0,"Void");
     if (NumberOfMaterial < 1)
     {
         std::clog << "Warning, json size is too small... Is it a list of material? Material list is reset" << std::endl;
@@ -426,12 +507,27 @@ void MaterialList::edit_from_json(nlohmann::json InputJson)
     }
     else
     {
+        if (ListMaterialType == basic_material)
+        {
+
+        }
+        else if (ListMaterialType == heat_material)
+        {
+
+        }
+        else
+        {
+            std::clog << "Warning while edit from json, unkwow material type or not implement yet" << std::endl;
+        }
+        MaterialVector.resize(
         std::vector<Material> lv(NumberOfMaterial, lMaterial);
         for (int k=1 ; k<NumberOfMaterial ; k++)
         {
             lMaterial.edit_from_json(InputJson[k]);
             lv[k] = lMaterial;
         }
-        MaterialVector = lv;
-    }
+        //MaterialVector = lv;
+    }*/
 }
+
+
