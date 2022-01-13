@@ -312,7 +312,7 @@ TEST( MaterialList_class, edit_functions)
     //std::cout << "create material list: " << lm1.get_json();
 
 
-    MList<Material> ml1;
+    MaterialList<Material> ml1;
     ml1.print();
     ml1.add_material(m1);
     ml1.print();

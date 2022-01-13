@@ -94,11 +94,11 @@ private:
  */
 
 template<class SubMaterial> 
-class MList
+class MaterialList
 {
 public:
-    MList();
-    ~MList();
+    MaterialList();
+    ~MaterialList();
 
     void add_material(const SubMaterial nMaterial);
     void edit_material(const unsigned int ID, const SubMaterial nMaterial);
@@ -108,7 +108,7 @@ public:
     SubMaterial get_material(unsigned int ID);
     void edit_save_file_name(std::string nName) {FileName = nName;}
     std::string get_save_file_name() {return FileName;}
-    unsigned int size() {return MV.size();}
+    unsigned int size() {return MaterialVector.size();}
 
     void save();
     void load();
@@ -117,89 +117,89 @@ private:
     void edit_from_json(nlohmann::json InputJson);
     nlohmann::json get_json();
 
-    std::vector<SubMaterial> MV;
+    std::vector<SubMaterial> MaterialVector;
     std::string FileName;
 };
 
 template <class SubMaterial>
-MList<SubMaterial>::MList() : MV{}
+MaterialList<SubMaterial>::MaterialList() : MaterialVector{}
 {
-    static_assert( std::is_base_of< Material, SubMaterial >::value, "Class insterted in MList is not Material or subclass Material" );
+    static_assert( std::is_base_of< Material, SubMaterial >::value, "Class insterted in MaterialList is not Material or subclass Material" );
     std::cout << "Constructor" << std::endl;
     SubMaterial nMaterial(0, "Void");
-    MV.push_back(nMaterial);
+    MaterialVector.push_back(nMaterial);
 }
 
 template <class SubMaterial>
-MList<SubMaterial>::~MList()
+MaterialList<SubMaterial>::~MaterialList()
 {
 
 }
 
 template <class SubMaterial>
-void MList<SubMaterial>::add_material(const SubMaterial nMaterial)
+void MaterialList<SubMaterial>::add_material(const SubMaterial nMaterial)
 {
-    std::cout << "add material ID " << MV.size() << std::endl;
-    int ID = MV.size();
-    MV.push_back(nMaterial);
-    MV[ID].edit_ID(ID);
+    std::cout << "add material ID " << MaterialVector.size() << std::endl;
+    int ID = MaterialVector.size();
+    MaterialVector.push_back(nMaterial);
+    MaterialVector[ID].edit_ID(ID);
 }
 
 template <class SubMaterial>
-void MList<SubMaterial>::edit_material(const unsigned int ID, const SubMaterial nMaterial)
+void MaterialList<SubMaterial>::edit_material(const unsigned int ID, const SubMaterial nMaterial)
 {
     if (ID == 0)
     {
         std::clog << "Warning, can't edit material 0, it is reserved for void material" << std::endl;
     }
-    else if (ID >= MV.size())
+    else if (ID >= MaterialVector.size())
     {
         std::clog << "Warning, trying to edit an out of bound Material, nothing is done" << std::endl;
     }
     else
     {
-        MV[ID] = nMaterial;
-        MV[ID].edit_ID(ID);
+        MaterialVector[ID] = nMaterial;
+        MaterialVector[ID].edit_ID(ID);
     }
 }
 
 template <class SubMaterial>
-void MList<SubMaterial>::delete_material(unsigned const int ID)
+void MaterialList<SubMaterial>::delete_material(unsigned const int ID)
 {
     if (ID == 0)
     {
         std::clog << "Warning, can't delete material 0, it is reserved for void material" << std::endl;
     }
-    else if (ID >= MV.size())
+    else if (ID >= MaterialVector.size())
     {
         std::clog << "Warning, trying to delete an out of bound Material, nothing is done" << std::endl;
     }
     else
     {
-        MV.erase(MV.begin()+ID);
-        for (unsigned int k=ID ; k<MV.size() ; k++) {MV[k].edit_ID(k);}
+        MaterialVector.erase(MaterialVector.begin()+ID);
+        for (unsigned int k=ID ; k<MaterialVector.size() ; k++) {MaterialVector[k].edit_ID(k);}
     }   
 }
 
 template <class SubMaterial>
-void MList<SubMaterial>::reset()
+void MaterialList<SubMaterial>::reset()
 {
-    MV.erase(MV.begin()+1, MV.end());
+    MaterialVector.erase(MaterialVector.begin()+1, MaterialVector.end());
 }
 
 template <class SubMaterial>
-SubMaterial MList<SubMaterial>::get_material(unsigned int ID)
+SubMaterial MaterialList<SubMaterial>::get_material(unsigned int ID)
 {
-    if ( ID >= MV.size() )
+    if ( ID >= MaterialVector.size() )
     {
         std::clog << "Warning, trying to access an out of bound material, returning the last one of the list" << std::endl;
-        ID = MV.size() - 1;
+        ID = MaterialVector.size() - 1;
     }
-    return MV[ID];
+    return MaterialVector[ID];
 }
 
 template <class SubMaterial>
-void MList<SubMaterial>::load()
+void MaterialList<SubMaterial>::load()
 {
     std::ifstream InputJsonFile;
     InputJsonFile.open(FileName);
@@ -227,7 +227,7 @@ void MList<SubMaterial>::load()
 }
 
 template <class SubMaterial>
-void MList<SubMaterial>::save()
+void MaterialList<SubMaterial>::save()
 {
     std::ofstream OutputJsonFile;
     OutputJsonFile.open(FileName);
@@ -243,7 +243,7 @@ void MList<SubMaterial>::save()
 }
 
 template <class SubMaterial>
-void MList<SubMaterial>::edit_from_json( nlohmann::json InputJson )
+void MaterialList<SubMaterial>::edit_from_json( nlohmann::json InputJson )
 {
     int NumberOfMaterial = InputJson.size();
     if (NumberOfMaterial < 1)
@@ -253,32 +253,32 @@ void MList<SubMaterial>::edit_from_json( nlohmann::json InputJson )
     }
     else
     {
-        MV.resize(NumberOfMaterial);
+        MaterialVector.resize(NumberOfMaterial);
         for (int k=1 ; k<NumberOfMaterial ; k++)
         {
-            MV[k].edit_from_json(InputJson[k]);
+            MaterialVector[k].edit_from_json(InputJson[k]);
         }
     }
 }
 
 template <class SubMaterial>
-nlohmann::json MList<SubMaterial>::get_json()
+nlohmann::json MaterialList<SubMaterial>::get_json()
 {
     nlohmann::json OutputJson{};
-    for (unsigned int k=0 ; k<MV.size() ; k++)
+    for (unsigned int k=0 ; k<MaterialVector.size() ; k++)
     {
-        OutputJson[k] = MV[k].get_json();
+        OutputJson[k] = MaterialVector[k].get_json();
     }
     return OutputJson;
 }
 
 template <class SubMaterial>
-void MList<SubMaterial>::print()
+void MaterialList<SubMaterial>::print()
 {
     std::cout << "print function" << std::endl;
-    for (unsigned int i=0 ; i<MV.size() ; i++)
+    for (unsigned int i=0 ; i<MaterialVector.size() ; i++)
     {
-        std::cout << "Element " << i << ": " << MV[i].get_json() << std::endl; 
+        std::cout << "Element " << i << ": " << MaterialVector[i].get_json() << std::endl; 
     }
 }
 
