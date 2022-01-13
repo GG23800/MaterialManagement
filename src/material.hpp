@@ -104,7 +104,6 @@ public:
     void edit_material(const unsigned int ID, const SubMaterial nMaterial);
     void delete_material(const unsigned int ID);
     void reset();
-    void print();
     SubMaterial get_material(unsigned int ID);
     void edit_save_file_name(std::string nName) {FileName = nName;}
     std::string get_save_file_name() {return FileName;}
@@ -128,6 +127,7 @@ MaterialList<SubMaterial>::MaterialList() : MaterialVector{}
     std::cout << "Constructor" << std::endl;
     SubMaterial nMaterial(0, "Void");
     MaterialVector.push_back(nMaterial);
+    FileName = "MaterialList.json";
 }
 
 template <class SubMaterial>
@@ -246,17 +246,18 @@ template <class SubMaterial>
 void MaterialList<SubMaterial>::edit_from_json( nlohmann::json InputJson )
 {
     int NumberOfMaterial = InputJson.size();
+    reset();
     if (NumberOfMaterial < 1)
     {
         std::clog << "Warning, json size is too small... Is it a list of material? Material list is reset" << std::endl;
-        reset();
     }
     else
     {
-        MaterialVector.resize(NumberOfMaterial);
+        SubMaterial lm(0);
         for (int k=1 ; k<NumberOfMaterial ; k++)
         {
-            MaterialVector[k].edit_from_json(InputJson[k]);
+            lm.edit_from_json(InputJson[k]);
+            MaterialVector.emplace_back(lm);
         }
     }
 }
@@ -271,16 +272,5 @@ nlohmann::json MaterialList<SubMaterial>::get_json()
     }
     return OutputJson;
 }
-
-template <class SubMaterial>
-void MaterialList<SubMaterial>::print()
-{
-    std::cout << "print function" << std::endl;
-    for (unsigned int i=0 ; i<MaterialVector.size() ; i++)
-    {
-        std::cout << "Element " << i << ": " << MaterialVector[i].get_json() << std::endl; 
-    }
-}
-
 
 #endif // MATERIAL_H

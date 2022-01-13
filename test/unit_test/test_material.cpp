@@ -1,4 +1,5 @@
 #include<gtest/gtest.h>
+#include<random>
 
 #include"material.hpp"
 
@@ -301,37 +302,85 @@ TEST( HeatMaterial_class, edit_functions)
 
 TEST( MaterialList_class, edit_functions)
 {
-    //MaterialList lm1(MaterialType::basic_material);
-    Material m1(8,"tata");
-    Material m2(12,"mat2");
-    Material m3(36,"mat3");
-    Material m4(69,"mat4");
-    Material m5(89,"mat5");
-    //lm1.add_material(m1);
+    std::random_device randd;
+    std::mt19937 rng(randd());
+    std::uniform_real_distribution<> udist(0, 1000);
+    
+    int k=0,r=0;
+    // number of generated material
+    int nmat = 12;
+    std::string name = "djebapckdhtb";
+    Material lmat(0);
+    std::vector<Material> lvec{};
+    MaterialList<Material> ML;
 
-    //std::cout << "create material list: " << lm1.get_json();
+    for (k=0 ; k<nmat ; k++)
+    {
+        r = int(udist(rng));
+        lmat.edit_ID(r);
+        lmat.edit_name(name+std::to_string(r));
+        lvec.push_back(lmat);
+        ML.add_material(lmat);
+    }
+    for (k=1 ; k<=nmat ; k++)
+    {
+        lmat = ML.get_material(k);
+        EXPECT_EQ( k, lmat.get_ID() );
+        EXPECT_EQ( lvec[k-1].get_name(), lmat.get_name() );
+    }
 
+    name = "kdujx7[-dh";
+    //edit material 5 to 9
+    for (k=5 ; k<=9 ; k++)
+    {
+        r = int(udist(rng));
+        lmat.edit_ID(r);
+        lmat.edit_name(name+std::to_string(r));
+        lvec[k-1] = lmat;
+        ML.edit_material(k,lmat);
+    }
+    for (k=5 ; k<=9 ; k++)
+    {
+        lmat = ML.get_material(k);
+        EXPECT_EQ( k, lmat.get_ID() );
+        EXPECT_EQ( lvec[k-1].get_name(), lmat.get_name() );
+    }
+    //delete material 2, 5, 10
+    ML.delete_material(10);
+    ML.delete_material(5);
+    ML.delete_material(2);
+    EXPECT_EQ( 10, ML.size() );
+    r = 1;
+    for (k=1 ; k<=nmat ; k++)
+    {
+        if ( (k!=2) && (k!=5) && (k!=10) )
+        {
+            lmat= ML.get_material(r);
+            EXPECT_EQ( r++, lmat.get_ID() );
+            EXPECT_EQ( lvec[k-1].get_name(), lmat.get_name() );
+        }
+    }
+    ML.save();
 
-    MaterialList<Material> ml1;
-    ml1.print();
-    ml1.add_material(m1);
-    ml1.print();
-    ml1.add_material(m2);
-    ml1.add_material(m3);
-    ml1.add_material(m4);
-    ml1.add_material(m5);
-    ml1.print();
-    m3.edit_name("kapué");
-    ml1.edit_material(3,m3);
-    ml1.print();
-    ml1.delete_material(4);
-    ml1.print();
-    Material nm(ml1.get_material(3));
-    ml1.reset();
-    ml1.print();
+    ML.reset();
+    EXPECT_EQ( 1, ML.size() );
+    lmat = ML.get_material(0);
+    EXPECT_EQ( 0, lmat.get_ID() );
+    EXPECT_EQ( "Void", lmat.get_name() );
 
-    std::cout << "caught material: " << nm.get_json() << std::endl;
-    //MList<std::vector<Material>> ml2;
+    ML.load();
+    r = 1;
+    // check that after reseting the list and loaded the backup saved before reset we retreive the good list
+    for (k=1 ; k<=nmat ; k++)
+    {
+        if ( (k!=2) && (k!=5) && (k!=10) )
+        {
+            lmat= ML.get_material(r);
+            EXPECT_EQ( r++, lmat.get_ID() );
+            EXPECT_EQ( lvec[k-1].get_name(), lmat.get_name() );
+        }
+    }
+
 }
 
 int main(int argc, char *argv[])
