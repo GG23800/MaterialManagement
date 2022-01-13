@@ -380,7 +380,6 @@ TEST( MaterialList_class, edit_functions)
             EXPECT_EQ( lvec[k-1].get_name(), lmat.get_name() );
         }
     }
-
 }
 
 int main(int argc, char *argv[])

@@ -18,12 +18,6 @@
 // Depending on the need a class can be derived for other purpose (acoustic, electromagnetic, etc.)
 // MATERIAL_VERBOSE is used for test/debug purpose
 
-enum MaterialType
-{
-    basic_material = 0,
-    heat_material,
-    number_of_type
-};
 
 class Material
 {
