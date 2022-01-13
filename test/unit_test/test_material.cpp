@@ -297,7 +297,41 @@ TEST( HeatMaterial_class, edit_functions)
     EXPECT_FLOAT_EQ( ojson["Density"], nDensity );
     EXPECT_FLOAT_EQ( ojson["SpecificHeat"], nSpecificHeat );
     EXPECT_FLOAT_EQ( ojson["ThermalConductivity"], nThermalConductivity );
+}
 
+TEST( MaterialList_class, edit_functions)
+{
+    //MaterialList lm1(MaterialType::basic_material);
+    Material m1(8,"tata");
+    Material m2(12,"mat2");
+    Material m3(36,"mat3");
+    Material m4(69,"mat4");
+    Material m5(89,"mat5");
+    //lm1.add_material(m1);
+
+    //std::cout << "create material list: " << lm1.get_json();
+
+
+    MList<Material> ml1;
+    ml1.print();
+    ml1.add_material(m1);
+    ml1.print();
+    ml1.add_material(m2);
+    ml1.add_material(m3);
+    ml1.add_material(m4);
+    ml1.add_material(m5);
+    ml1.print();
+    m3.edit_name("kapué");
+    ml1.edit_material(3,m3);
+    ml1.print();
+    ml1.delete_material(4);
+    ml1.print();
+    Material nm(ml1.get_material(3));
+    ml1.reset();
+    ml1.print();
+
+    std::cout << "caught material: " << nm.get_json() << std::endl;
+    //MList<std::vector<Material>> ml2;
 }
 
 int main(int argc, char *argv[])

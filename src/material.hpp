@@ -86,31 +86,201 @@ private:
 
 // Material ID is automatically manage by MaterialList
 // ID 0 is reserved for void material
-// to take benefit of polymorphisme we use a container of Material*
-// we use a unique_ptr so we don't have to worry about destructors
-class MaterialList
+// to take benefit of polymorphisme we use only material class and subclass
+/*
+ * use of templace class that only accept material and subclass material
+ * static_assert is a compil time assertion
+ * is_base_of return true if sMaterial is a Material or a subclass of Material
+ */
+
+template<class SubMaterial> 
+class MList
 {
 public:
-    MaterialList(MaterialType nmt);
-    void add_material(const Material &new_material);
-    void add_material(const HeatMaterial &new_heat_materiao);
-    void edit_material(unsigned int ID, const Material &new_material);
-    void edit_material(unsigned int ID, const HeatMaterial &new_heat_material);
-    void delete_material(unsigned int ID);
+    MList();
+    ~MList();
+
+    void add_material(const SubMaterial nMaterial);
+    void edit_material(const unsigned int ID, const SubMaterial nMaterial);
+    void delete_material(const unsigned int ID);
     void reset();
+    void print();
+    SubMaterial get_material(unsigned int ID);
+    void edit_save_file_name(std::string nName) {FileName = nName;}
     std::string get_save_file_name() {return FileName;}
-    void set_save_file_name(std::string nFileName) {FileName = nFileName;}
+    unsigned int size() {return MV.size();}
 
-    void load();
     void save();
+    void load();
 
-//private:
-    nlohmann::json get_json();
-    void edit_from_json(nlohmann::json input_json);
 private:
-    MaterialType ListMaterialType;
-    std::vector< std::unique_ptr<Material> > MaterialVector;
-    std::string FileName; // file name where MaterialList can be saved or loaded
+    void edit_from_json(nlohmann::json InputJson);
+    nlohmann::json get_json();
+
+    std::vector<SubMaterial> MV;
+    std::string FileName;
 };
+
+template <class SubMaterial>
+MList<SubMaterial>::MList() : MV{}
+{
+    static_assert( std::is_base_of< Material, SubMaterial >::value, "Class insterted in MList is not Material or subclass Material" );
+    std::cout << "Constructor" << std::endl;
+    SubMaterial nMaterial(0, "Void");
+    MV.push_back(nMaterial);
+}
+
+template <class SubMaterial>
+MList<SubMaterial>::~MList()
+{
+
+}
+
+template <class SubMaterial>
+void MList<SubMaterial>::add_material(const SubMaterial nMaterial)
+{
+    std::cout << "add material ID " << MV.size() << std::endl;
+    int ID = MV.size();
+    MV.push_back(nMaterial);
+    MV[ID].edit_ID(ID);
+}
+
+template <class SubMaterial>
+void MList<SubMaterial>::edit_material(const unsigned int ID, const SubMaterial nMaterial)
+{
+    if (ID == 0)
+    {
+        std::clog << "Warning, can't edit material 0, it is reserved for void material" << std::endl;
+    }
+    else if (ID >= MV.size())
+    {
+        std::clog << "Warning, trying to edit an out of bound Material, nothing is done" << std::endl;
+    }
+    else
+    {
+        MV[ID] = nMaterial;
+        MV[ID].edit_ID(ID);
+    }
+}
+
+template <class SubMaterial>
+void MList<SubMaterial>::delete_material(unsigned const int ID)
+{
+    if (ID == 0)
+    {
+        std::clog << "Warning, can't delete material 0, it is reserved for void material" << std::endl;
+    }
+    else if (ID >= MV.size())
+    {
+        std::clog << "Warning, trying to delete an out of bound Material, nothing is done" << std::endl;
+    }
+    else
+    {
+        MV.erase(MV.begin()+ID);
+        for (unsigned int k=ID ; k<MV.size() ; k++) {MV[k].edit_ID(k);}
+    }   
+}
+
+template <class SubMaterial>
+void MList<SubMaterial>::reset()
+{
+    MV.erase(MV.begin()+1, MV.end());
+}
+
+template <class SubMaterial>
+SubMaterial MList<SubMaterial>::get_material(unsigned int ID)
+{
+    if ( ID >= MV.size() )
+    {
+        std::clog << "Warning, trying to access an out of bound material, returning the last one of the list" << std::endl;
+        ID = MV.size() - 1;
+    }
+    return MV[ID];
+}
+
+template <class SubMaterial>
+void MList<SubMaterial>::load()
+{
+    std::ifstream InputJsonFile;
+    InputJsonFile.open(FileName);
+    if (!InputJsonFile)
+    {
+        std::clog << "Warning, can't open " << FileName << ", file doesn't exist or corrupted. New Material     list file with only void material will be created" << std::endl;
+        std::ofstream OutputJsonFile;
+        OutputJsonFile.open(FileName);
+        if (!OutputJsonFile)
+        {
+            std::clog << "Error, can't create new material list file" << std::endl; // TODO stop program?
+        }
+        else
+        {
+            reset();
+            OutputJsonFile << get_json();
+            OutputJsonFile.close();
+        }
+    }
+    else
+    {
+        edit_from_json(nlohmann::json::parse(InputJsonFile));
+        InputJsonFile.close();
+    }
+}
+
+template <class SubMaterial>
+void MList<SubMaterial>::save()
+{
+    std::ofstream OutputJsonFile;
+    OutputJsonFile.open(FileName);
+    if (!OutputJsonFile)
+    {
+        std::clog << "Error, can't open/create material list file" << std::endl; // TODO stop?
+    }
+    else
+    {
+        OutputJsonFile << get_json();
+        OutputJsonFile.close();
+    }
+}
+
+template <class SubMaterial>
+void MList<SubMaterial>::edit_from_json( nlohmann::json InputJson )
+{
+    int NumberOfMaterial = InputJson.size();
+    if (NumberOfMaterial < 1)
+    {
+        std::clog << "Warning, json size is too small... Is it a list of material? Material list is reset" << std::endl;
+        reset();
+    }
+    else
+    {
+        MV.resize(NumberOfMaterial);
+        for (int k=1 ; k<NumberOfMaterial ; k++)
+        {
+            MV[k].edit_from_json(InputJson[k]);
+        }
+    }
+}
+
+template <class SubMaterial>
+nlohmann::json MList<SubMaterial>::get_json()
+{
+    nlohmann::json OutputJson{};
+    for (unsigned int k=0 ; k<MV.size() ; k++)
+    {
+        OutputJson[k] = MV[k].get_json();
+    }
+    return OutputJson;
+}
+
+template <class SubMaterial>
+void MList<SubMaterial>::print()
+{
+    std::cout << "print function" << std::endl;
+    for (unsigned int i=0 ; i<MV.size() ; i++)
+    {
+        std::cout << "Element " << i << ": " << MV[i].get_json() << std::endl; 
+    }
+}
+
 
 #endif // MATERIAL_H
