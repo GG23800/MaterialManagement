@@ -18,16 +18,10 @@ Json part of the librairy is made using [nlohmann/json](https://github.com/nlohm
 
 ## License
 
-This librairy is licensed under [GNU General Public License V3.0](LICENSE).
+This librairy is licensed under [GNU Lesser General Public License V2.1](LICENSE).
 
 It can be used for free for open source user, academic user, hobby project. For commercial use please contact the author.
 
 ## To do
 
-Make correct tests via gtest
-
 Make doxigen documentation?
-
-Utility of material ID? Automatically managed by MaterialList
-
-Material list as a template? No need for multiple class with inheritance? Or take benefit from polymorphismon material list template?
