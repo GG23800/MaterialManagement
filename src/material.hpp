@@ -7,7 +7,7 @@
 
 #include"json.hpp"
 
-#define MATERIAL_VERBOSE 1
+#define MATERIAL_VERBOSE 0
 
 // Author: Jérôme Dubois
 // Date: 2022/01

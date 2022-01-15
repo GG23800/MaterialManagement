@@ -300,7 +300,7 @@ TEST( HeatMaterial_class, edit_functions)
     EXPECT_FLOAT_EQ( ojson["ThermalConductivity"], nThermalConductivity );
 }
 
-TEST( MaterialList_class, edit_functions)
+TEST( MaterialList_class, Material_class_template)
 {
     std::random_device randd;
     std::mt19937 rng(randd());
@@ -378,6 +378,116 @@ TEST( MaterialList_class, edit_functions)
             lmat= ML.get_material(r);
             EXPECT_EQ( r++, lmat.get_ID() );
             EXPECT_EQ( lvec[k-1].get_name(), lmat.get_name() );
+        }
+    }
+}
+
+TEST( MaterialList_class, Heat_Material_class_template)
+{
+    std::random_device randd;
+    std::mt19937 rng(randd());
+    std::uniform_real_distribution<> udist(0, 1000);
+    
+    int k=0,r=0;
+    float val = 0.f;
+    // number of generated material
+    int nmat = 12;
+    std::string name = "eixjtneakxo--~";
+    HeatMaterial lmat(0);
+    std::vector<HeatMaterial> lvec{};
+    MaterialList<HeatMaterial> ML;
+
+    for (k=0 ; k<nmat ; k++)
+    {
+        r = int(udist(rng));
+        lmat.edit_ID(r);
+        lmat.edit_name(name+std::to_string(r));
+        // heat parameter
+        val = udist(rng);
+        lmat.edit_density(val);
+        val = udist(rng);
+        lmat.edit_specific_heat(val);
+        val = udist(rng);
+        lmat.edit_thermal_conductivity(val);
+        lvec.push_back(lmat);
+        ML.add_material(lmat);
+    }
+    for (k=1 ; k<=nmat ; k++)
+    {
+        lmat = ML.get_material(k);
+        EXPECT_EQ( k, lmat.get_ID() );
+        EXPECT_EQ( lvec[k-1].get_name(), lmat.get_name() );
+        EXPECT_FLOAT_EQ( lvec[k-1].get_density(), lmat.get_density() );
+        EXPECT_FLOAT_EQ( lvec[k-1].get_specific_heat(), lmat.get_specific_heat() );
+        EXPECT_FLOAT_EQ( lvec[k-1].get_thermal_conductivity(), lmat.get_thermal_conductivity() );
+    }
+
+    name = "m^jdk_&,?jfdks";
+    //edit material 5 to 9
+    for (k=5 ; k<=9 ; k++)
+    {
+        r = int(udist(rng));
+        lmat.edit_ID(r);
+        lmat.edit_name(name+std::to_string(r));
+        // heat parameter
+        val = udist(rng);
+        lmat.edit_density(val);
+        val = udist(rng);
+        lmat.edit_specific_heat(val);
+        val = udist(rng);
+        lmat.edit_thermal_conductivity(val);
+        lvec[k-1] = lmat;
+        ML.edit_material(k,lmat);
+    }
+    for (k=5 ; k<=9 ; k++)
+    {
+        lmat = ML.get_material(k);
+        EXPECT_EQ( k, lmat.get_ID() );
+        EXPECT_EQ( lvec[k-1].get_name(), lmat.get_name() );
+        EXPECT_FLOAT_EQ( lvec[k-1].get_density(), lmat.get_density() );
+        EXPECT_FLOAT_EQ( lvec[k-1].get_specific_heat(), lmat.get_specific_heat() );
+        EXPECT_FLOAT_EQ( lvec[k-1].get_thermal_conductivity(), lmat.get_thermal_conductivity() );
+    }
+    //delete material 2, 5, 10
+    ML.delete_material(10);
+    ML.delete_material(5);
+    ML.delete_material(2);
+    EXPECT_EQ( 10, ML.size() );
+    r = 1;
+    for (k=1 ; k<=nmat ; k++)
+    {
+        if ( (k!=2) && (k!=5) && (k!=10) )
+        {
+            lmat= ML.get_material(r);
+            EXPECT_EQ( r++, lmat.get_ID() );
+            EXPECT_EQ( lvec[k-1].get_name(), lmat.get_name() );
+            EXPECT_FLOAT_EQ( lvec[k-1].get_density(), lmat.get_density() );
+            EXPECT_FLOAT_EQ( lvec[k-1].get_specific_heat(), lmat.get_specific_heat() );
+            EXPECT_FLOAT_EQ( lvec[k-1].get_thermal_conductivity(), lmat.get_thermal_conductivity() );
+        }
+    }
+    ML.edit_save_file_name("HeatMaterialList.json");
+    ML.save();
+
+    ML.reset();
+    EXPECT_EQ( 1, ML.size() );
+    lmat = ML.get_material(0);
+    EXPECT_EQ( 0, lmat.get_ID() );
+    EXPECT_EQ( "Void", lmat.get_name() );
+
+    ML.load();
+    r = 1;
+    // check that after reseting the list and loaded the backup saved before reset we retreive the good list
+    for (k=1 ; k<=nmat ; k++)
+    {
+        if ( (k!=2) && (k!=5) && (k!=10) )
+        {
+            lmat= ML.get_material(r);
+            EXPECT_EQ( r++, lmat.get_ID() );
+            EXPECT_EQ( lvec[k-1].get_name(), lmat.get_name() );
+            EXPECT_FLOAT_EQ( lvec[k-1].get_density(), lmat.get_density() );
+            EXPECT_FLOAT_EQ( lvec[k-1].get_specific_heat(), lmat.get_specific_heat() );
+            EXPECT_FLOAT_EQ( lvec[k-1].get_thermal_conductivity(), lmat.get_thermal_conductivity() );
         }
     }
 }
