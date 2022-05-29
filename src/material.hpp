@@ -4,6 +4,8 @@
 #include<iostream>
 #include<fstream>
 #include<typeinfo>
+#include<vector>
+#include<algorithm>
 
 #include"json.hpp"
 
@@ -29,6 +31,9 @@ public:
     Material& operator=(Material &&other); //move assignement operator
     ~Material();
 
+    //bool operator< (const Material& lhs, const Material& rhs);
+    virtual bool operator< (const Material& rhs) const;
+
     // edit functions
     void edit_material(const int nID,  const std::string nName);
     void edit_material(const Material OtherMaterial);
@@ -37,9 +42,12 @@ public:
     void edit_name(const std::string nName);
 
     // get functions
-    int get_ID() {return ID;}
-    std::string get_name() {return Name;}
+    int get_ID() const {return ID;}
+    std::string get_name() const {return Name;}
     virtual nlohmann::json get_json();
+
+    // various
+    virtual void print();
 
 private:
     std::string Name;
@@ -58,6 +66,8 @@ public:
     HeatMaterial& operator=(HeatMaterial &&other); //move assignement operator
     ~HeatMaterial();
 
+    //bool operator< (const HeatMaterial& lhs, const HeatMaterial& rhs) {return 
+
     // edit functions
     void edit_material(const HeatMaterial OtherMaterial);
     void edit_density(float nDensity);
@@ -70,6 +80,9 @@ public:
     float get_specific_heat() {return SpecificHeat;}
     float get_thermal_conductivity() {return ThermalConductivity;}
     nlohmann::json get_json();
+
+    // various
+    virtual void print();
 
 private:
     float Density;
@@ -105,6 +118,8 @@ public:
 
     void save();
     void load();
+    void sort();
+    void print();
 
 private:
     void edit_from_json(nlohmann::json InputJson);
@@ -237,6 +252,13 @@ void MaterialList<SubMaterial>::save()
 }
 
 template <class SubMaterial>
+void MaterialList<SubMaterial>::sort()
+{
+    std::sort(MaterialVector.begin()+1, MaterialVector.end());
+    for (unsigned int k=0 ; k<MaterialVector.size() ; k++) {MaterialVector[k].edit_ID(k);}
+}
+
+template <class SubMaterial>
 void MaterialList<SubMaterial>::edit_from_json( nlohmann::json InputJson )
 {
     int NumberOfMaterial = InputJson.size();
@@ -265,6 +287,15 @@ nlohmann::json MaterialList<SubMaterial>::get_json()
         OutputJson[k] = MaterialVector[k].get_json();
     }
     return OutputJson;
+}
+
+template <class SubMaterial>
+void MaterialList<SubMaterial>::print()
+{
+    for (unsigned int k=0 ; k<MaterialVector.size() ; k++)
+    {
+        MaterialVector[k].print();
+    }
 }
 
 #endif // MATERIAL_H

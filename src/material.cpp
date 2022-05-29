@@ -66,6 +66,15 @@ Material::~Material()
     #endif
 }
 
+bool Material::operator< (const Material& rhs) const
+{
+    std::string lhss = this->Name;
+    std::string rhss = rhs.get_name();
+    for (std::string::iterator sit=lhss.begin(); sit!=lhss.end(); sit++) {*sit = tolower(*sit);}
+    for (std::string::iterator sit=rhss.begin(); sit!=rhss.end(); sit++) {*sit = tolower(*sit);}
+
+    return (lhss < rhss);
+}
 
 void Material::edit_material(const int nID, const std::string nName)
 {
@@ -131,6 +140,11 @@ nlohmann::json Material::get_json()
     ljson["Name"] = Name;
 
     return ljson;
+}
+
+void Material::print()
+{
+    std::cout << "Material " << ID << " \"" << Name << "\"" << std::endl;
 }
 
 
@@ -302,3 +316,8 @@ nlohmann::json HeatMaterial::get_json()
     return ljson;
 }
 
+void HeatMaterial::print()
+{
+    Material::print();
+    std::cout << "Density: " << Density << ", Specific Heat: " << SpecificHeat << ", Thermal Conductivity: " << ThermalConductivity << std::endl;
+}

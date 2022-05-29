@@ -103,6 +103,14 @@ TEST( Material_class, edit_functions)
     // if need of a special test to show function where the assert apply one can use typeid of <typeinfo>
 }
 
+TEST( Material_class, various)
+{
+    // test sur inf??
+    //
+    Material nm(23, "Try to print");
+    nm.print();
+}
+
 TEST( HeatMaterial_class, constructor )
 {
     // default name "unknowed", density 1, specific heat 1, thermal conductivity 1
@@ -300,6 +308,15 @@ TEST( HeatMaterial_class, edit_functions)
     EXPECT_FLOAT_EQ( ojson["ThermalConductivity"], nThermalConductivity );
 }
 
+TEST( HeatMaterial_class, various)
+{
+    // test sur inf??
+    //
+    Material nm(23, "Try to print");
+    HeatMaterial nhm(nm, 12.2,3.14,3871.2);
+    nhm.print();
+}
+
 TEST( MaterialList_class, Material_class_template)
 {
     std::random_device randd;
@@ -379,6 +396,26 @@ TEST( MaterialList_class, Material_class_template)
             EXPECT_EQ( r++, lmat.get_ID() );
             EXPECT_EQ( lvec[k-1].get_name(), lmat.get_name() );
         }
+    }
+
+    ML.edit_save_file_name("UnsortMaterialList.json");
+    ML.load();
+    std::cout << "initial material list:" << std::endl;
+    ML.print();
+    MaterialList<Material> ML2;
+    ML2.edit_save_file_name("UnsortMaterialList.json");
+    ML2.load();
+    ML2.sort();
+    std::cout << "sorted material list:" << std::endl;
+    ML2.print();
+    std::vector<unsigned int> sorted{0,6,3,9,1,2,7,8,5,4};
+    //6-3-9-1-2-7-8-5-4
+    Material lmat2(0);
+    for (int k=0 ; k<10 ; k++)
+    {
+        lmat2 = ML2.get_material(k);
+        lmat = ML.get_material(sorted[k]);
+        EXPECT_EQ( lmat.get_name(), lmat2.get_name() );
     }
 }
 
@@ -489,6 +526,25 @@ TEST( MaterialList_class, Heat_Material_class_template)
             EXPECT_FLOAT_EQ( lvec[k-1].get_specific_heat(), lmat.get_specific_heat() );
             EXPECT_FLOAT_EQ( lvec[k-1].get_thermal_conductivity(), lmat.get_thermal_conductivity() );
         }
+    }
+
+    ML.edit_save_file_name("UnsortHeatMaterialList.json");
+    ML.load();
+    std::cout << "initial material list:" << std::endl;
+    ML.print();
+    MaterialList<HeatMaterial> ML2;
+    ML2.edit_save_file_name("UnsortHeatMaterialList.json");
+    ML2.load();
+    ML2.sort();
+    std::cout << "sorted material list:" << std::endl;
+    ML2.print();
+    std::vector<unsigned int> sorted{0,6,2,1,4,3,7,9,5,8};
+    Material lmat2(0);
+    for (int k=0 ; k<10 ; k++)
+    {
+        lmat2 = ML2.get_material(k);
+        lmat = ML.get_material(sorted[k]);
+        EXPECT_EQ( lmat.get_name(), lmat2.get_name() );
     }
 }
 
